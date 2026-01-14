@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prosjekt Lager - Utlånshåndtering</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- HEADER/TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand">
+          <h1>📦 Prosjekt Lager</h1>
+          <p class="tag">Utlånshåndtering</p>
+        </div>
+      </div>
+
+      <div class="topbar-center">
+        <div class="stat-item">
+          <span class="stat-icon">⏳</span>
+          <span class="stat-label">Aktive lån</span>
+          <span id="activeCount" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">✅</span>
+          <span class="stat-label">Tilgjengelig</span>
+          <span id="availableCount" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">⚠️</span>
+          <span class="stat-label">Vedlikehold</span>
+          <span id="maintenanceCount" class="stat-value">0</span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button id="adminBtn" class="btn btn-gradient">🔐 Admin Panel</button>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- DASHBOARD SECTION -->
+      <section class="dashboard-section">
+        <div class="section-header">
+          <h2>Dashboard</h2>
+          <p class="section-desc">Oversikt over utstyr og lån</p>
+        </div>
+        <div class="dashboard-grid">
+          <div class="metric-card">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #0066cc, #0080ff);">📊</div>
+            <div class="metric-info">
+              <h4>Totalt utstyr</h4>
+              <p id="totalEquipment" class="metric-value">0</p>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #00d9ff, #00b8d4);">📤</div>
+            <div class="metric-info">
+              <h4>Utlånt nå</h4>
+              <p id="loanedCount" class="metric-value">0</p>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #10b981, #059669);">👥</div>
+            <div class="metric-info">
+              <h4>Aktive brukere</h4>
+              <p id="userCount" class="metric-value">0</p>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon" style="background: linear-gradient(135deg, #7c3aed, #5b21b6);">🔔</div>
+            <div class="metric-info">
+              <h4>Forsinkede lån</h4>
+              <p id="overdueCount" class="metric-value">0</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCANNER SECTION - PRIMARY -->
+      <section class="scanner-section card-modern">
+        <div class="scanner-header">
+          <h2>🔍 Skann utstyr eller bruker</h2>
+          <p class="section-desc">Skriv eller skann strekkode (U=bruker, P=produkt)</p>
+        </div>
+        <div class="scanner-container">
+          <input 
+            id="scanInput" 
+            type="text" 
+            class="scanner-input" 
+            placeholder="Eks: U12345 eller P98765" 
+            autofocus 
+          />
+          <button id="scanBtn" class="btn btn-primary btn-lg">SKANN</button>
+        </div>
+        <div id="result" class="result-panel hidden" aria-live="polite"></div>
+        <div class="scanner-buttons">
+          <button id="categoriesBtn" class="btn btn-secondary">📁 Kategorier</button>
+          <button class="btn btn-outline" onclick="alert('Historikk kommer snart')">📋 Historikk</button>
+        </div>
+      </section>
+
+      <!-- FEATURED PRODUCTS SECTION -->
+      <section class="products-section">
+        <div class="section-header">
+          <h2>⭐ Populære produkter</h2>
+          <p class="section-desc">De mest lånte artiklene</p>
+        </div>
+        <div id="featured" class="products-grid"></div>
+      </section>
+
+      <!-- ACTIVE LOANS SECTION -->
+      <section class="loans-section">
+        <div class="section-header">
+          <h2>📚 Aktive lån</h2>
+          <p class="section-desc">Lån som foreløpig er ute</p>
+        </div>
+        <div id="activeLoans" class="loans-list">
+          <p class="empty-state">Ingen aktive lån nå</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- ADMIN PANEL MODAL -->
+    <div id="adminModal" class="modal hidden" role="dialog" aria-hidden="true">
+      <div class="modal-overlay" onclick="document.getElementById('adminModal').classList.add('hidden')"></div>
+      <div class="modal-box card-modern" style="max-width: 900px; width: 90%;">
+        <button class="modal-close" onclick="document.getElementById('adminModal').classList.add('hidden')">✕</button>
+        
+        <!-- LOGIN VIEW -->
+        <div id="adminLoginView">
+          <h3>🔐 Admin Innlogging</h3>
+          <div class="form-group">
+            <label for="adminUser">E-post</label>
+            <input id="adminUser" type="email" placeholder="admin@skole.no" />
+          </div>
+          <div class="form-group">
+            <label for="adminPass">Passord</label>
+            <input id="adminPass" type="password" placeholder="••••••••" />
+          </div>
+          <div class="modal-actions">
+            <button id="adminCancel" class="btn btn-outline">Avbryt</button>
+            <button id="adminLogin" class="btn btn-gradient">Logg inn</button>
+          </div>
+        </div>
+
+        <!-- ADMIN DASHBOARD VIEW -->
+        <div id="adminDashboardView" class="hidden">
+          <h3>🔐 Admin Panel</h3>
+          <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="equipment">📦 Utstyr</button>
+            <button class="admin-tab" data-tab="users">👥 Brukere</button>
+            <button class="admin-tab" data-tab="categories">📁 Kategorier</button>
+            <button class="admin-tab" data-tab="loans">📚 Lån</button>
+          </div>
+
+          <!-- EQUIPMENT TAB -->
+          <div class="admin-tab-content" data-content="equipment">
+            <div class="admin-header">
+              <h4>Administrer utstyr</h4>
+              <button id="addEquipmentBtn" class="btn btn-primary btn-sm">+ Legg til utstyr</button>
+            </div>
+            <div id="equipmentList" class="admin-list"></div>
+            
+            <!-- ADD/EDIT EQUIPMENT FORM -->
+            <div id="equipmentForm" class="admin-form hidden">
+              <h5 id="equipmentFormTitle">Legg til nytt utstyr</h5>
+              <div class="form-group">
+                <label for="eqId">Strekkode/ID *</label>
+                <input id="eqId" type="text" placeholder="P1001" />
+              </div>
+              <div class="form-group">
+                <label for="eqName">Navn *</label>
+                <input id="eqName" type="text" placeholder="Projektor 4K" />
+              </div>
+              <div class="form-group">
+                <label for="eqCategory">Kategori</label>
+                <select id="eqCategory">
+                  <option value="Elektronikk">Elektronikk</option>
+                  <option value="AV">AV-utstyr</option>
+                  <option value="Musikk">Musikk</option>
+                  <option value="Sport">Sport</option>
+                  <option value="Tilbehør">Tilbehør</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="eqStatus">Status</label>
+                <select id="eqStatus">
+                  <option value="available">Tilgjengelig</option>
+                  <option value="loaned">Utlånt</option>
+                  <option value="maintenance">Vedlikehold</option>
+                </select>
+              </div>
+              <div class="form-actions">
+                <button id="cancelEquipment" class="btn btn-outline btn-sm">Avbryt</button>
+                <button id="saveEquipment" class="btn btn-primary btn-sm">Lagre</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- USERS TAB -->
+          <div class="admin-tab-content hidden" data-content="users">
+            <div class="admin-header">
+              <h4>Administrer brukere</h4>
+              <button id="addUserBtn" class="btn btn-primary btn-sm">+ Legg til bruker</button>
+            </div>
+            <div id="usersList" class="admin-list"></div>
+            
+            <!-- ADD/EDIT USER FORM -->
+            <div id="userForm" class="admin-form hidden">
+              <h5 id="userFormTitle">Legg til ny bruker</h5>
+              <div class="form-group">
+                <label for="userId">Bruker-ID *</label>
+                <input id="userId" type="text" placeholder="U1001" />
+              </div>
+              <div class="form-group">
+                <label for="userName">Navn *</label>
+                <input id="userName" type="text" placeholder="Ola Nordmann" />
+              </div>
+              <div class="form-group">
+                <label for="userEmail">E-post</label>
+                <input id="userEmail" type="email" placeholder="ola@skole.no" />
+              </div>
+              <div class="form-actions">
+                <button id="cancelUser" class="btn btn-outline btn-sm">Avbryt</button>
+                <button id="saveUser" class="btn btn-primary btn-sm">Lagre</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CATEGORIES TAB -->
+          <div class="admin-tab-content hidden" data-content="categories">
+            <div class="admin-header">
+              <h4>Administrer kategorier</h4>
+              <button id="addCategoryBtn" class="btn btn-primary btn-sm">+ Legg til kategori</button>
+            </div>
+            <div id="categoriesList" class="admin-list"></div>
+          </div>
+
+          <!-- LOANS TAB -->
+          <div class="admin-tab-content hidden" data-content="loans">
+            <div class="admin-header">
+              <h4>Alle lån</h4>
+            </div>
+            <div id="allLoansList" class="admin-list"></div>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 2rem;">
+            <button id="adminLogout" class="btn btn-outline">Logg ut</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <p>🔒 Sikker utlånshåndtering for skoler • GDPR-sertifisert</p>
+      <p class="footer-links">
+        <a href="#">Om</a> • <a href="#">Kontakt</a> • <a href="#">Vilkår</a>
+      </p>
+    </footer>
+  </div>
+
+  <script type="module" src="./javascript.js"></script>
+</body>
+</html>

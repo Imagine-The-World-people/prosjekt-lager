@@ -1,6 +1,23 @@
-serviceAccountKey.json
-firebase-config.js
-.env
+# Node
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build / temp
+dist/
+build/
 *.log
 .DS_Store
+
+# Env / Secrets
+.env
+.env.local
+.env.*.local
+
+# Firebase service account
+scripts/serviceAccountKey.json
+serviceAccountKey.json
+
+# OS files
+Thumbs.db
